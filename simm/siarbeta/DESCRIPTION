@@ -1,0 +1,15 @@
+Package: siarbeta
+Type: Package
+Title: Beta-dependent Stable Isotope Mixing Model
+Version: 0.1
+License: file LICENSE
+Description: Application of beta-dependent stable isotope mixng models.
+Authors@R:
+    person("Yutaka", "Osada", role = c("aut", "cre"),
+            email = "ytosada@gmail.com",
+            comment = c(ORCID = "0000-0001-5967-194X"))
+Encoding: UTF-8
+Imports: Rcpp, stats, methods, coda, ggplot2, GGally
+LinkingTo: Rcpp
+RcppModules: simm
+RoxygenNote: 7.1.1

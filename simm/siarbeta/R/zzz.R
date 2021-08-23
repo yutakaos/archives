@@ -1,0 +1,2 @@
+
+Rcpp::loadModule("simm", TRUE)
