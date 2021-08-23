@@ -18,11 +18,11 @@ library(siardata)
 # Set data
 library(siar)
 data("geese1demo", "sourcesdemo", "correctionsdemo", "concdepdemo")
-mixture = geese1demo
-sources = sourcesdemo[,-1]
-correct = correctionsdemo[,-1]
-concdep = concdepdemo[,-1]
-source_names = as.character(sourcesdemo[,1])
+mixture <- geese1demo
+sources <- sourcesdemo[,-1]
+correct <- correctionsdemo[,-1]
+concdep <- concdepdemo[,-1]
+source_names <- as.character(sourcesdemo[,1])
 rm(geese1demo, sourcesdemo, correctionsdemo, concdepdemo)
 ```
 
