@@ -58,7 +58,7 @@ model {
         g_coef[k+1] <- coef[k] * vs[k]
     }
     
-    # Prios for random effects (half-cauchy)
+    # Priors for random effects (half-cauchy)
     tau <- 1 / sigma / sigma
     sigma ~ dt(0, 0.0016, 1) I(0,)
     
@@ -74,7 +74,7 @@ model {
         ONE[i,3] ~ dbern(step(8.0 - growth[i]))
     }
     
-    # 4. spatial autocorrelation
+    # 4. Spatial autocorrelation
     for (i in 1:NSS) {
         s_mu[i] <- inprod(density[,1], WEIS[,IDSS[i]])
         ZERO[i] ~ dnorm(s_mu[i], s_prec)
