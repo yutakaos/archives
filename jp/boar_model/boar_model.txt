@@ -1,5 +1,5 @@
 data {
-    # PI :Uuninformative prior for variable selection
+    # PI : Uuninformative prior for variable selection
     for (k in 1:NV) {
         PI[k] <- 0.5
     }
