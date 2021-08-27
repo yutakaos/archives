@@ -1,0 +1,83 @@
+data {
+    # PI :Uuninformative prior for variable selection
+    for (k in 1:NV) {
+        PI[k] <- 0.5
+    }
+    
+    # ONE, ZERO : Dummy variables for one's and zero's trick
+    for (i in 1:NS) {
+        ONE[i,1] <- 1
+        ONE[i,2] <- 1
+        ONE[i,3] <- 1
+        ZERO[i]  <- 0
+    }
+}
+
+model {
+    # 1. Observation model
+    for (y in 1:2) {
+        for (i in 1:NCS[y]) {
+            mu[i,y] <- r_capt * num_g[IDCS[i,y],y] / AREA[IDCS[i,y]] * TRAP[IDCS[i,y],y]
+            CAPT[IDCS[i,y],y] ~ dpois(mu[i,y])
+        }
+    }
+    r_capt ~ dunif(0, 5)
+    
+    # 2. System model
+    for (i in 1:NS) {
+        # Convert to density
+        density[i,1] <- num_h[i,1] / AREA[i]
+        density[i,2] <- num_h[i,2] / AREA[i]
+        
+        # Population dynamics
+        # y = 1
+        num_0[i] ~ dunif(1,10000)
+        num_h[i,1] <- trunc(num_0[i])
+        num_g[i,1] ~ dpois(growth[i] * num_h[i,1])
+        
+        # y = 2
+        num_h[i,2] <- num_g[i,1] - HUNT[i,1]
+        num_g[i,2] ~ dpois(growth[i] * num_h[i,2])
+        
+        # Constraints (HUNT < num_g)
+        ONE[i,1] ~ dbern(step(num_g[i,1] - HUNT[i,1]))
+        ONE[i,2] ~ dbern(step(num_g[i,2] - HUNT[i,2]))
+    }
+    
+    # 3. Parameter model
+    # Priors
+    g_prec ~ dgamma(0.001, 0.001)
+    prec[1] <- g_prec
+    prec[2] <- g_prec * (sum(vs) + 1)
+    
+    # Intercept and slops (with variable selection)
+    g_coef[1] ~ dnorm(0, prec[2])
+    for (k in 1:NV) {
+        vs  [k] ~ dbern(PI[k])
+        coef[k] ~ dnorm(0, prec[vs[k] + 1])
+        g_coef[k+1] <- coef[k] * vs[k]
+    }
+    
+    # Prios for random effects (half-cauchy)
+    tau <- 1 / sigma / sigma
+    sigma ~ dt(0, 0.0016, 1) I(0,)
+    
+    # Growth rate
+    for (i in 1:NS) {
+        # Random effects
+        g_rand[i] ~ dnorm(0.0, tau)
+        
+        # Linear mixed model
+        log(growth[i]) <- inprod(g_coef, ENVI[i,]) + g_rand[i]
+        
+        # Constraints (growth < 8.0)
+        ONE[i,3] ~ dbern(step(8.0 - growth[i]))
+    }
+    
+    # 4. spatial autocorrelation
+    for (i in 1:NSS) {
+        s_mu[i] <- inprod(density[,1], WEIS[,IDSS[i]])
+        ZERO[i] ~ dnorm(s_mu[i], s_prec)
+    }
+    s_prec ~ dgamma(0.001, 0.001)
+}
