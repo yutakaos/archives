@@ -1,17 +1,17 @@
-# ����L��
+# イノシシモデルの解説
 
-���̃y�[�W�ł͘a���L���� JAGS �R�[�h��������Ă��܂��B
-�_���� J-STAGE ����_�E�����[�h���ł��܂��B
+このページでは和文記事の JAGS コードを説明しています。
+論文は J-STAGE からダウンロードができます。
 https://www.jstage.jst.go.jp/article/hozen/23/1/23_29/_article/-char/ja/
 
-����������ɂ�����A�o�œ����Ɏg�p�����R�[�h�Ƃ͓����łȂ����ς��Ă��܂��B
+＊説明するにあたり、出版当時に使用したコードとは同じでなく改変しています。
 
-## �f�[�^�\���idata�j�̎w��
+## データ構造（data）の指定
 
-�l�𐄒肵�Ȃ��ȉ��̕ϐ����w�肵�܂��B
+値を推定しない以下の変数を指定します。
 
-1. �ϐ��I���̎��O���z
-2. One's trick �� Zero's trick �̂��߂̃_�~�[�ϐ�
+1. 変数選択の事前分布
+2. One's trick と Zero's trick のためのダミー変数
 
 ```r
 data {
@@ -30,14 +30,14 @@ data {
 }
 ```
 
-## One's trick �� Zero's trick
+## One's trick と Zero's trick
 
-�{�R�[�h�ł� One's trick �� Zero's trick ���g�p���邽�߁A�ȒP�ɐ������܂��B
+本コードでは One's trick と Zero's trick を使用するため、簡単に説明します。
 
-JAGS �ł́A�����̎�v�Ȋm�����z�����O�ɗp�ӂ���Ă���A
-�����̏ꍇ�Ɋm�����z���`���_�Ŏw�肷��ΊȒP�ɖޓx���v�Z���邱�Ƃ��ł��܂��B
+JAGS では、多くの主要な確率分布が事前に用意されており、
+多くの場合に確率分布をチルダで指定すれば簡単に尤度を計算することができます。
 
-1. �ʏ�̕��@
+1. 通常の方法
 
 ```r
 model{
@@ -45,10 +45,10 @@ model{
 }
 ```
 
-�������Ȃ���A���O�ɗp�ӂ���Ă��Ȃ��m�����z�ɂ͒ʏ�̕��@�͎g���܂���B
-One's trick �� Zero's trick �͒ʏ�Ƃ͈قȂ�L�@�Ŗޓx���v�Z���邽�߂̃e�N�j�b�N�ł��B
+しかしながら、事前に用意されていない確率分布には通常の方法は使えません。
+One's trick や Zero's trick は通常とは異なる記法で尤度を計算するためのテクニックです。
 
-2. One's trick�iL = �x���k�[�C���z�̖ޓx�j
+2. One's trick（L = ベルヌーイ分布の尤度）
 
 ```r
 data {
@@ -60,7 +60,7 @@ model {
 }
 ```
 
-3. Zero's trick�ilogL = �x���k�[�C���z�̑ΐ��ޓx�j
+3. Zero's trick（logL = ベルヌーイ分布の対数尤度）
 
 ```r
 data {
@@ -72,23 +72,23 @@ model {
 }
 ```
 
-�m�����z�ɂ���Ėޓx���v�Z���₷���ꍇ�Ƒΐ��ޓx���v�Z���₷���ꍇ������̂ŁA
-�󋵂ɂ���� One's trick �� Zero's trick ���g�������܂��B
+確率分布によって尤度が計算しやすい場合と対数尤度が計算しやすい場合があるので、
+状況によって One's trick と Zero's trick を使い分けます。
 
 
-## ���f���\���imodel�j�̎w��
+## モデル構造（model）の指定
 
-���f���������ɂ�����A�u�f�[�^�Ȃǂ̒l�����̕ϐ��v�͑啶���A�u����p�����[�^�Ȃǒl�̕ω�����ϐ��v�� �������Ƃ������[���ŏ����Ă��܂��B
+モデルを書くにあたり、「データなどの値が一定の変数」は大文字、「推定パラメータなど値の変化する変数」は 小文字というルールで書いています。
 
 
-### �ϑ����f��
+### 観測モデル
 
-- �ϑ����f���ł́A�s���P�ʂ̔���ȕߊl���iCAPT�j���|�A�\�����z�ɏ]�����Ƃ����肵�Ă��܂��B
+- 観測モデルでは、市町単位の箱わな捕獲数（CAPT）がポアソン分布に従うことを仮定しています。
 
-���ϕߊl���imu�j = �ߊl���ir_capt�j�~ �����̐��inum_g�j/ �����n�ʐρiAREA�j�~ ����Ȑ��iTRAP�j
+平均捕獲数（mu） = 捕獲率（r_capt）× 生息個体数（num_g）/ 生息地面積（AREA）× 箱わな数（TRAP）
 
-- �s���E�N�ɂ���Ă͕ߊl�����邢�͔���Ȑ��̃f�[�^�������Ă��邽�߁A
-NCS �� IDCS �Ƃ����ϐ����g���Č����l�𖳎����Ă��܂��B
+- 市町・年によっては捕獲数あるいは箱わな数のデータが書けているため、
+NCS と IDCS という変数を使って欠損値を無視しています。
 
 ```r
 # 1. Observation model
@@ -101,21 +101,21 @@ for (y in 1:2) {
 r_capt ~ dunif(0, 5)
 ```
 
-### �V�X�e�����f��
+### システムモデル
 
-- �V�X�e�����f���ł́A�s���P�ʂ̃C�m�V�V�̌Q��
+- システムモデルでは、市町単位のイノシシ個体群が
 
-�@�@�E�E�E �� �ߊl�ɂ��̐����� �� �o�����S�ɂ��̐����� �� �E�E�E
+    ・・・ → 捕獲による個体数減少 → 出生死亡による個体数増加 → ・・・
 
-�Ƃ����v���Z�X�ɂ��̌Q�ϓ����邱�Ƃ�z�肵�Ă��܂��B
+というプロセスにより個体群変動することを想定しています。
 
-- ���ۂɂ͈ړ��o���̌Q�ϓ��ɉe�����Ă���͂��ł����A
-�s���P�ʂł̉�͈͂ړ��o���o�����S�̉e�����傫���ƍl�����܂��B
-�܂��A�̌Q�������igrowth�j�ɂ͕ϗʌ��ʂ��܂܂�Ă���̂ŁA
-�ړ��o�̉e��������Εϗʌ��ʂɂ���čl������܂��B
+- 実際には移入出も個体群変動に影響しているはずですが、
+市町単位での解析は移入出より出生死亡の影響が大きいと考えられます。
+また、個体群成長率（growth）には変量効果が含まれているので、
+移入出の影響があれば変量効果によって考慮されます。
 
-- �ߊl�O�̌̐��inum_g�j�͕ߊl���iHUNT�j��菬�����Ȃ�܂���B
-�����ŁAOne's trick �ɂ�� HUNT < num_g �ł��邱�Ƃ�ۏ؂��܂��B
+- 捕獲前の個体数（num_g）は捕獲数（HUNT）より小さくなりません。
+そこで、One's trick により HUNT < num_g であることを保証します。
 
 ```r
 # 2. System model
@@ -140,13 +140,13 @@ for (i in 1:NS) {
 }
 ```
 
-### �p�����[�^���f��
+### パラメータモデル
 
-- �̌Q����������`�������f���iLMM�j�ɂ���ă��f�������܂��B
+- 個体群成長率を線形混合モデル（LMM）によってモデル化します。
 
-- �̌Q�������� 8.0 �ȉ��ɂȂ�悤���񂵂Ă��܂��B
+- 個体群成長率は 8.0 以下になるよう制約しています。
 
-- �ϗʌ��ʂ̎��O���z�͔��R�[�V�[���z���g���Ă��܂��B
+- 変量効果の事前分布は半コーシー分布を使っています。
 
 ```r
 # 3. Parameter model
@@ -178,16 +178,16 @@ for (i in 1:NS) {
 }
 ```
 
-### ���N�x�̐��̋�Ԏ��ȑ���
+### 初年度個体数の空間自己相関
 
-- �����n��t���̃C�m�V�V�͗��j�I�ȕ��z�g������Ă����o�܂�����܂��B
-�����ŁA���j�I�Ȗ��x�̗ގ�����\�����邽�߁A���N�x�ɋ�Ԏ��ȑ��ւ��l���܂��B
+- 調査地千葉県のイノシシは歴史的な分布拡大をしてきた経緯があります。
+そこで、歴史的な密度の類似性を表現するため、初年度に空間自己相関を考えます。
 
-- s_mu =�i�ׂ荇���s���̖��x�̕��ρj�[�i���̎s���̖��x�j
+- s_mu =（隣り合う市町の密度の平均）ー（その市町の密度）
 
-- �󐼎s�͂ƂĂ��ŋ߂ɃC�m�V�V�̐l�דI�N�����������ƍl�����Ă���A
-��t���k���ŗB��C�m�V�V���蒅���Ă���n��ł����i���������j�B
-���̂��߁A�󐼎s�̋�Ԏ��ȑ��ւ� NSS �� IDSS �Ƃ����ϐ����g���Ė������Ă��܂��B
+- 印西市はとても最近にイノシシの人為的侵入があったと考えられており、
+千葉県北部で唯一イノシシが定着している地域でした（調査当時）。
+そのため、印西市の空間自己相関は NSS と IDSS という変数を使って無視しています。
 
 ```r
 # 4. spatial autocorrelation
@@ -199,7 +199,7 @@ for (i in 1:NSS) {
 s_prec ~ dgamma(0.001, 0.001)
 ```
 
-- Zero's trick �ɂ���Ă����l�ɕ\���ł��܂��B
+- Zero's trick によっても同様に表現できます。
 
 ```r
 # 4. spatial autocorrelation
