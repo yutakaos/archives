@@ -7,17 +7,21 @@
 mixingspace(
   mixture,
   sources,
+  correct = NULL,
   axis = 1:2,
   source_names = NULL,
   element_names = NULL
 )
 }
 \arguments{
-\item{mixture}{A matrix with each target individual as a seperate row and each isotope as
-a seperate column.}
+\item{mixture}{A matrix with each target individual as a separate row and each isotope as
+a separate column.}
 
 \item{sources}{A matrix containing the mean and standard deviations of the source values for
 each of the isotopes.}
+
+\item{correct}{A matrix containing the mean and standard deviations of the fractional correction
+values for each of the isotopes.}
 
 \item{axis}{The element axes used as x and y in mixing space.}
 
