@@ -4,7 +4,7 @@
 #' \code{siarbeta} diagnoses the uncertainty due to underdetermination by beta-posteriors.
 #'
 #' @param mixture
-#'    A matrix with each target individual as a seperate row and each isotope as a seperate column.
+#'    A matrix with each target individual as a separate row and each isotope as a separate column.
 #' @param sources
 #'    A matrix containing the mean and standard deviations of the source values for
 #'    each of the isotopes.

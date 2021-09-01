@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluate_ump.R
 \name{evaluate_ump}
 \alias{evaluate_ump}
-\title{Underdetermination diagnositc for Bayesian stable isotope mixing models}
+\title{Underdetermination diagnostic for Bayesian stable isotope mixing models}
 \usage{
 evaluate_ump(simm_outs, prob = 0.95)
 }
