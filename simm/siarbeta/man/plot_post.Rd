@@ -18,7 +18,7 @@ plot_post(
 
 \item{prob}{A numeric scalar in the interval (0,1), giving highest posterior density interval.}
 
-\item{type}{The output type. The default is "source", where only source contirbutions are used
+\item{type}{The output type. The default is "source", where only source contributions are used
 in posterior density plots.}
 }
 \value{

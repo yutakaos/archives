@@ -1,4 +1,4 @@
-#' Underdetermination diagnositc for Bayesian stable isotope mixing models
+#' Underdetermination diagnostic for Bayesian stable isotope mixing models
 #' 
 #' \code{evaluate_ump} produces underdetermination diagnostics.
 #' 

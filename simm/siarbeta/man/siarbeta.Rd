@@ -21,7 +21,7 @@ siarbeta(
 )
 }
 \arguments{
-\item{mixture}{A matrix with each target individual as a seperate row and each isotope as a seperate column.}
+\item{mixture}{A matrix with each target individual as a separate row and each isotope as a separate column.}
 
 \item{sources}{A matrix containing the mean and standard deviations of the source values for
 each of the isotopes.}
