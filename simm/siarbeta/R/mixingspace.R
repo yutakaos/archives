@@ -3,11 +3,14 @@
 #' \code{mixingspace} draws isotopic mixing space.
 #' 
 #' @param mixture
-#'    A matrix with each target individual as a seperate row and each isotope as
-#'    a seperate column.
+#'    A matrix with each target individual as a separate row and each isotope as
+#'    a separate column.
 #' @param sources
 #'    A matrix containing the mean and standard deviations of the source values for
 #'    each of the isotopes.
+#' @param correct
+#'    A matrix containing the mean and standard deviations of the fractional correction
+#'    values for each of the isotopes.
 #' @param axis
 #'    The element axes used as x and y in mixing space.
 #' @param source_names
@@ -32,9 +35,11 @@
 #'     element_names = c("d13C", "d15N"))
 
 mixingspace = function (
-    mixture, sources, axis = 1:2, source_names = NULL, element_names = NULL)
+    mixture, sources, correct = NULL, axis = 1:2,
+    source_names = NULL, element_names = NULL)
 {
     axis = axis[1:2]
+    if (!is.null(correct)) sources = sources + correct
     mixture = as.data.frame(mixture)
     sources = as.data.frame(sources)
     
