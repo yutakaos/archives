@@ -191,7 +191,6 @@ for (i in 1:NS) {
 
 ```r
 # 4. spatial autocorrelation
-
 for (i in 1:NSS) {
     s_mu[i] <- inprod(density[,1], WEIS[,IDSS[i]])
     ZERO[i] ~ dnorm(s_mu[i], s_prec)
