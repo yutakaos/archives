@@ -81,7 +81,7 @@ evaluate_ump(out_H)
 
 # Plot mixing space
 g1 = mixingspace(
-    mixture, sources,
+    mixture, sources, correct, axis = 2:1,
     source_names  = source_names,
     element_names = c("d13C", "d15N") )
 

@@ -4,8 +4,8 @@ A tutorial for siarbeta package.
 
 ## Installation
 ```r
-library(remotes)
-remotes::install_github("yutakaos/archives/simm/siarbeta")
+library(devtools)
+devtools::install_github("yutakaos/archives/simm/siarbeta")
 ```
 
 ## Tutorial
@@ -13,7 +13,7 @@ remotes::install_github("yutakaos/archives/simm/siarbeta")
 ### Load library and set data
 ```r
 # Load libarary
-library(siardata)
+library(siarbeta)
 
 # Set data
 library(siar)
@@ -84,7 +84,7 @@ evaluate_ump(out_H)
 
 # Plot mixing isotope space
 mixingspace(
-    mixture, sources,
+    mixture, sources, correct, axis = 2:1,
     source_names  = source_names,
     element_names = c("d13C", "d15N") )
 
@@ -95,3 +95,4 @@ plot_post(out_L, out_H, type = "source")
 <img src="tools/figures/Fig_3.png" width="70%">
 <figcaption><i>Figure 2 | Isotopic mixing space and posterior density plot.</i></figcaption>
 </figure>
+

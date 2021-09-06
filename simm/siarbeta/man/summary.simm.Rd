@@ -2,12 +2,12 @@
 % Please edit documentation in R/summary.simm.R
 \name{summary.simm}
 \alias{summary.simm}
-\title{Summary statisics for Bayesian stable isotope mixing models}
+\title{Summary statistics for Bayesian stable isotope mixing models}
 \usage{
 \method{summary}{simm}(object, quantiles = c(0.025, 0.5, 0.975), ...)
 }
 \arguments{
-\item{object}{A simm (and mcmc.list) object, which hasmore than one chain.}
+\item{object}{A simm (and mcmc.list) object, which has more than one chain.}
 
 \item{quantiles}{A vector of quantiles to evaluate credible intervals.}
 
@@ -26,8 +26,8 @@ A data.frame where each row represents summary statistic of SIMM outputs:
 }
 }
 \description{
-\code{summary.simm} produces summary statistics (mean, SD, quantiles, Gelman diagnostic
-and mean determination coefficinet).
+\code{summary.simm} produces summary statistics (mean, SD, quantile, Gelman-Rbin diagnostic
+and mean determination coefficient).
 }
 \examples{
 mixture = matrix(0, nrow = 1, ncol = 2)
@@ -42,6 +42,6 @@ out_L = siarbeta(
     mixture, sources, correct = 0, concdep = 1, alpha = 1, beta = 1,
     error = "variance", chains = 3, iters = 10000, burns = 5000, thins = 4)
 
-# Summary statistcs
+# Summary statistics
 summary.simm(out_L)
 }

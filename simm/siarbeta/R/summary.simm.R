@@ -1,10 +1,10 @@
-#' Summary statisics for Bayesian stable isotope mixing models
+#' Summary statistics for Bayesian stable isotope mixing models
 #' 
-#' \code{summary.simm} produces summary statistics (mean, SD, quantiles, Gelman diagnostic
-#' and mean determination coefficinet).
+#' \code{summary.simm} produces summary statistics (mean, SD, quantile, Gelman-Rbin diagnostic
+#' and mean determination coefficient).
 #' 
 #' @param object
-#'    A simm (and mcmc.list) object, which hasmore than one chain.
+#'    A simm (and mcmc.list) object, which has more than one chain.
 #' @param quantiles
 #'    A vector of quantiles to evaluate credible intervals.
 #' @param ...
@@ -35,7 +35,7 @@
 #'     mixture, sources, correct = 0, concdep = 1, alpha = 1, beta = 1,
 #'     error = "variance", chains = 3, iters = 10000, burns = 5000, thins = 4)
 #' 
-#' # Summary statistcs
+#' # Summary statistics
 #' summary.simm(out_L)
 
 summary.simm = function (object, quantiles = c(0.025, 0.5, 0.975), ...)
