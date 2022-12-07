@@ -47,7 +47,8 @@ UIC と類似の因果推定法である **Transfer Entropy (TE, Schreiber 2000)
 
 ## インストール方法
 
-Github から直接ダウンロードしてインストールを行います。
+Github から直接ダウンロードしてインストールを行います。Rcpp と RcppArmadillo というライブラリをインストール時に使用するため、Windows では Rtools を、Mac では gcc（Homebrew を通して？）を事前にインストールする必要があります。
+
 ``` r
 library(remotes)
 remotes::install_github("yutakaos/rUIC")
@@ -56,6 +57,11 @@ remotes::install_github("yutakaos/rUIC")
 ## 因果推定を行うまでの解析方法の一例
 
 #### 1. ライブラリの読み込み／データの生成
+
+解析を始める前に、**データのスケーリングを行うことを推奨**します。これは、データがゼロからかけ離れた値をもっていると、プログラム内で桁落ちを起こし正しい結果が得られないためです。データのスケーリングとは「データ全体に特定の値を引いたり割ったりする」ことで、因果の推定には影響しません。
+
+今回の例で使用するデータは元々ゼロ近くにあるため、スケーリングをしません。
+
 ```r
 # Load library
 library(rUIC); packageVersion("rUIC") # v0.9.0
