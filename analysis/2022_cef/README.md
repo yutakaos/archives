@@ -2,7 +2,7 @@
 
 ## Paper
 
-Osada et al. "Niche space of regional coastal fish community revealed by large-scale environmental DNA survey."
+Osada et al. "Complexity and ecosystem functioning relationships in large communities."
 
 ## Directory Download
 
