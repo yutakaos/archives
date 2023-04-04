@@ -2,10 +2,11 @@
 
 A tutorial for siarbeta package.
 
-Citation:
+**Citation**:
+
 Y. Osada, J. Matsubayashi, I.o Tayasu. (2021)
 Diagnosing underdetermination in stable isotope mixing models.
-Plos one 16: e0257818.
+*Plos one* 16: e0257818.
 
 ## Installation
 ```r
