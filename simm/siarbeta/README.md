@@ -2,6 +2,11 @@
 
 A tutorial for siarbeta package.
 
+Citation:
+Y. Osada, J. Matsubayashi, I.o Tayasu. (2021)
+Diagnosing underdetermination in stable isotope mixing models.
+Plos one 16: e0257818.
+
 ## Installation
 ```r
 library(devtools)
@@ -15,15 +20,29 @@ devtools::install_github("yutakaos/archives/simm/siarbeta")
 # Load libarary
 library(siarbeta)
 
-# Set data
-library(siar)
-data("geese1demo", "sourcesdemo", "correctionsdemo", "concdepdemo")
-mixture <- geese1demo
-sources <- sourcesdemo[,-1]
-correct <- correctionsdemo[,-1]
-concdep <- concdepdemo[,-1]
-source_names <- as.character(sourcesdemo[,1])
-rm(geese1demo, sourcesdemo, correctionsdemo, concdepdemo)
+# Set data (Inger et al. 2006, Parnell et al. 2010)
+mixture <- matrix(
+    c( 10.22, 10.37, 10.44, 10.52, 10.19, 10.45,  9.91, 11.27,  9.34,
+      -11.36,-11.88,-10.6 ,-11.25,-11.66,-10.41,-10.88,-14.73,-11.52),
+    ncol=2, dimname=list(NULL, c("d15N","d13C")))
+source_names <- c("Zostera","Grass","U.lactuca","Entermorpha")
+stat_names   <- c("Mean_15N","SD_15N","Mean_13C","SD_13C")
+sources <- matrix(
+    c(6.488984470, 1.459463243, -11.17022768, 1.214956157,
+      4.432160103, 2.268070895, -30.87984395, 0.641318210,
+      11.19261280, 1.112438464, -11.17090004, 1.959330558,
+      9.816279751, 0.827103932, -14.05701092, 1.172467672),
+    ncol=4, byrow=TRUE, dimnames=list(source_names, stat_names))
+correct <- matrix(
+    c(3.54,0.74,1.63,0.63), nrow=4, ncol=4, byrow=TRUE,
+    dimnames=list(source_names, stat_names)
+)
+concdep <- matrix(
+    c(0.0297, 0.0097, 0.3593, 0.0561,
+      0.0355, 0.0063, 0.4026, 0.0380,
+      0.0192, 0.0053, 0.2098, 0.0327,
+      0.0139, 0.0057, 0.1844, 0.1131),
+    ncol=4, byrow=TRUE, dimnames=list(source_names, stat_names))
 ```
 
 ### Run MCMC
