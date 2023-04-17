@@ -38,7 +38,7 @@ make_data = function (tl = 200, Z = 0, init_y = rep(0.4, 4))
 # Simulations
 set.seed(870204)
 block <- make_data(tl=200, init_y=runif(4, 0.1, 0.5))
-Y = colnames(block)[-1]
+Y <- colnames(block)[-1]
 
 alpha <- 0.01
 out <- lapply(Y, function (y)
@@ -50,7 +50,6 @@ for (i in 2:4) for (j in 1:3) {
     if (i <= j) next
     df  <- out[[i]][out[[i]]$target==Y[j],]
     col <- c("#F8766D","#00BFC4","black")[unique(as.numeric(df$direct))]
-    #gp[[3*(i-2) + j]] <- ggplot(df, aes(x=-tp, y=te)) +
     gp[[3*(j-1) + i-1]] <- ggplot(df, aes(x=-tp, y=te)) +
         geom_line() + geom_hline(yintercept=0) +
         geom_point(aes(color=direct), size=2, show.legend=FALSE) +

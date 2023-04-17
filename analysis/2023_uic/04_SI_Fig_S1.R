@@ -6,175 +6,73 @@ setwd("2023_uic")
 if (!dir.exists("figs")) dir.create("figs")
 
 # Load library
-library(rEDM)
 library(rUIC)
-library(RTransferEntropy)
-library(pROC)
 library(ggplot2)
 library(cowplot)
 theme_set(theme_cowplot())
 
-# Read functions
-source('functions/make_data.R')
-source('functions/ccm_wrap.R')
+# 4-species logistic model (Ye et al. 2015)
+make_data = function (tl = 200, Z = 0, init_y = rep(0.4, 4))
+{
+    y <- matrix(NA, tl, 4)
+    y[1,] <- init_y[1:4]
+    for (t in 1:(tl-1)) {
+        y[t+1,1] <- y[t,1] * (3.9 - 3.9 * y[t,1])
+        y[t+1,2] <- y[t,2] * (3.6 - 3.6 * y[t,2] - 0.4  * y[t,1])
+        y[t+1,3] <- y[t,3] * (3.6 - 3.6 * y[t,3] - 0.4  * y[t,2])
+        y[t+1,4] <- y[t,4] * (3.8 - 3.8 * y[t,4] - 0.35 * y[t,3])
+    }
+    y[,1] <- y[,1] + Z * rnorm(tl, 0, sd(y[,1], na.rm = TRUE))
+    y[,2] <- y[,2] + Z * rnorm(tl, 0, sd(y[,2], na.rm = TRUE))
+    y[,3] <- y[,3] + Z * rnorm(tl, 0, sd(y[,3], na.rm = TRUE))
+    y[,4] <- y[,4] + Z * rnorm(tl, 0, sd(y[,4], na.rm = TRUE))
+    colnames(y) <- sprintf("y%s", 1:4)
+    data.frame(t=1:tl, y)
+}
 
 #------------------------------------------------------------------------------#
-# Figure S1
-# Test function
-test = function (block, lib="Y", tar="X", tp=1)
-{
-    out <- rUIC::uic.optimal(block, lib_var=lib, tar_var=tar, E=1:5, tp=-tp)
-    E <- out$E[1]  # Optimal E for CCM and UIC
-    data.frame(
-        TE  = calc_te(block[,tar], block[,lib], lx=tp, ly=tp, shuffles=1),
-        CCM = ccm_wrap(block, lib_var=lib, tar_var=tar, E=E, tp=-tp)$te[1],
-        UIC = out$te[1]
-    )
-}
-
-# AUC function for nonlinear dynamical system
-get_auc_1 = function (tl = 200, zLib = 0.1, zTar = 0.1, Nrand = 1000)
-{
-    # data generations
-    out_1 <- lapply(1:Nrand, function(k) {
-        B <- make_data_2sp_logistic(tl=tl, Bxy=0.1, Zx=zTar, Zy=zLib)
-        data.frame(causal=1, test(B))
-    })
-    out_0 <- lapply(1:Nrand, function(k) {
-        B <- make_data_2sp_logistic(tl=tl, Bxy=0.0, Zx=zTar, Zy=zLib)
-        data.frame(causal=0, test(B))
-    })
-    out <- do.call(rbind, c(out_1, out_0))
-    out[out < 0] <- 0
-    
-    # compute AUC
-    method <- colnames(out)[-1]
-    roc <- lapply(method, function(x) {
-        out <- pROC::roc(out[,1], out[,x], direction="<", quiet=TRUE)
-        out <- with(out, data.frame(method=x, FPR=1-specificities, TPR=sensitivities))
-        out <- out[nrow(out):1,]
-        out
-    })
-    roc <- do.call(rbind, roc)
-    roc$method <- factor(roc$method, levels=method)
-    data.frame(
-        tl=tl, zLib=zLib, zTar=zTar, roc,
-        lib=sprintf("Effect's noise = %s", zLib),
-        tar=sprintf("Cause's noise = %s" , zTar)
-    )
-}
-
-# AUC function for linear dynamical system
-get_auc_2 = function (tl = 200, zLib = 0.1, zTar = 0.1, Nrand = 1000)
-{
-    # data generations
-    out_1 <- lapply(1:Nrand, function(k) {
-        B <- make_data_2sp_var(tl=tl, Bxy=0.5, Ex=zTar, Ey=zLib)
-        data.frame(causal=1, test(B))
-    })
-    out_0 <- lapply(1:Nrand, function(k) {
-        B <- make_data_2sp_var(tl=tl, Bxy=0.0, Ex=zTar, Ey=zLib)
-        data.frame(causal=0, test(B))
-    })
-    out <- do.call(rbind, c(out_1, out_0))
-    out[out < 0] <- 0
-    
-    # compute AUC
-    method <- colnames(out)[-1]
-    roc <- lapply(method, function(x) {
-        out <- pROC::roc(out[,1], out[,x], direction="<", quiet=TRUE)
-        out <- with(out, data.frame(method=x, FPR=1-specificities, TPR=sensitivities))
-        out <- out[nrow(out):1,]
-        out
-    })
-    roc <- do.call(rbind, roc)
-    roc$method <- factor(roc$method, levels=method)
-    data.frame(
-        tl=tl, zLib=zLib, zTar=zTar, roc,
-        lib=sprintf("Effect's noise = %s", zLib),
-        tar=sprintf("Cause's noise = %s" , zTar)
-    )
-}
-
-# AUC function for nonlinear dynamical system with system noise
-get_auc_3 = function (tl = 200, zLib = 0.1, zTar = 0.1, Nrand = 1000)
-{
-    # data generations
-    out_1 <- lapply(1:Nrand, function(k) {
-        B <- make_data_2sp_richer(tl=tl, Bxy=0.1, Ex=zTar, Ey=zLib)
-        data.frame(causal=1, test(B))
-    })
-    out_0 <- lapply(1:Nrand, function(k) {
-        B <- make_data_2sp_richer(tl=tl, Bxy=0.0, Ex=zTar, Ey=zLib)
-        data.frame(causal=0, test(B))
-    })
-    out <- do.call(rbind, c(out_1, out_0))
-    out[out < 0] <- 0
-    
-    # compute AUC
-    method <- colnames(out)[-1]
-    roc <- lapply(method, function(x) {
-        out <- pROC::roc(out[,1], out[,x], direction="<", quiet=TRUE)
-        out <- with(out, data.frame(method=x, FPR=1-specificities, TPR=sensitivities))
-        out <- out[nrow(out):1,]
-        out
-    })
-    roc <- do.call(rbind, roc)
-    roc$method <- factor(roc$method, levels=method)
-    data.frame(
-        tl=tl, zLib=zLib, zTar=zTar, roc,
-        lib=sprintf("Effect's noise = %s", zLib),
-        tar=sprintf("Cause's noise = %s" , zTar)
-    )
-}
-
-# Numerical simulations
-# Warning messages are recieved from CCM, which has no effects on our results.
+#
+# Simulations
 set.seed(870204)
-df_1 <- rbind(
-    get_auc_1(tl=100, zLib=0.01, zTar=0.01, Nrand=1000),
-    get_auc_1(tl=100, zLib=0.01, zTar=0.5 , Nrand=1000),
-    get_auc_1(tl=100, zLib=0.5 , zTar=0.01, Nrand=1000),
-    get_auc_1(tl=100, zLib=0.5 , zTar=0.5 , Nrand=1000)
-)
-df_2 <- rbind(
-    get_auc_2(tl=100, zLib=1, zTar=1, Nrand=1000),
-    get_auc_2(tl=100, zLib=1, zTar=2, Nrand=1000),
-    get_auc_2(tl=100, zLib=2, zTar=1, Nrand=1000),
-    get_auc_2(tl=100, zLib=2, zTar=2, Nrand=1000)
-)
-df_3 <- rbind(
-    get_auc_2(tl=100, zLib=0.1, zTar=0.1, Nrand=1000),
-    get_auc_2(tl=100, zLib=0.1, zTar=1.0, Nrand=1000),
-    get_auc_2(tl=100, zLib=1.0, zTar=0.1, Nrand=1000),
-    get_auc_2(tl=100, zLib=1.0, zTar=1.0, Nrand=1000)
-)
-save(df_1, df_2, df_3, file="04_outs.RData")
+block <- make_data(tl=200, init_y=runif(4, 0.1, 0.5))
+Y <- colnames(block)[-1]
 
-# ggplot
-gp_1 <- ggplot(df_1, aes(x=FPR, y=TPR, color=method)) +
-    geom_line() + geom_abline(intercept=0, slope=1) +
-    facet_grid(lib ~ tar) +
-    coord_cartesian(xlim=c(0,1), ylim=c(0,1)) +
-    labs(x="FPR", y="TPR") +
-    theme_bw(); print(gp_1)
+gp <- rep(list(NULL), 9)
+for (i in 1:3) for (j in 1:3) {
+    if (i==1 && j==2) {
+        block$cond <- c(NA,block[-200,"y2"])
+        out <- rUIC::uic.optimal(
+            block, lib_var="y3", tar_var="y1", cond_var="cond",
+            alpha=0.01, E=1:10, tp=-(0:8))
+    }
+    else if (i==1 && j==3) {
+        block$cond <- c(NA,block[-200,"y3"])
+        out <- rUIC::uic.optimal(
+            block, lib_var="y4", tar_var="y1", cond_var="cond",
+            E=1:10, tp=-(0:8))
+    }
+    else if (i==2 && j==3) {
+        block$cond <- c(NA,block[-200,"y3"])
+        out <- rUIC::uic.optimal(
+            block, lib_var="y4", tar_var="y2", cond_var="cond",
+            E=1:10, tp=-(0:8))
+    }
+    else {
+        out <- rUIC::uic.optimal(
+            block, lib_var=Y[i+1], tar_var=Y[j],
+            E=1:10, tp=-(0:8))
+    }
+    gp[[3*(j-1) + i]] <- ggplot(out, aes(x=-tp, y=te)) +
+        geom_line() + geom_hline(yintercept=0) +
+        geom_point(size=2, show.legend=FALSE) +
+        ylim(c(-0.1, 1.7)) + labs(x=NULL, y=NULL) +
+        theme_bw()
+}; rm(i, j, out)
 
-gp_2 <- ggplot(df_2, aes(x=FPR, y=TPR, color=method)) +
-    geom_line() + geom_abline(intercept=0, slope=1) +
-    facet_grid(lib ~ tar) +
-    coord_cartesian(xlim=c(0,1), ylim=c(0,1)) +
-    labs(x="FPR", y="TPR") +
-    theme_bw(); print(gp_2)
+gp <- eval(parse(text=paste0(
+    "plot_grid(", paste0(sprintf("gp[[%s]],", 1:9), collapse=""),
+    "nrow=3, ncol=3)"))); print(gp)
 
-gp_3 <- ggplot(df_3, aes(x=FPR, y=TPR, color=method)) +
-    geom_line() + geom_abline(intercept=0, slope=1) +
-    facet_grid(lib ~ tar) +
-    coord_cartesian(xlim=c(0,1), ylim=c(0,1)) +
-    labs(x="FPR", y="TPR") +
-    theme_bw(); print(gp_3)
-
-ggsave("figs/Fig_S1a.png", plot=gp_1, width=4.8, height=4.0)
-ggsave("figs/Fig_S1b.png", plot=gp_2, width=4.8, height=4.0)
-ggsave("figs/Fig_S1c.png", plot=gp_3, width=4.8, height=4.0)
+ggsave("figs/Fig_S1.png", plot=gp, width=8, height=8)
 
 # End
