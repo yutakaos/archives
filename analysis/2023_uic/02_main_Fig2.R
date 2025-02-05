@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------#
-# Script for main text
+# Script for main figure 2
 #------------------------------------------------------------------------------#
 # Set working directory
 setwd("2023_uic")
@@ -9,7 +9,9 @@ if (!dir.exists("figs")) dir.create("figs")
 library(rUIC)
 library(ggplot2)
 library(cowplot)
-theme_set(theme_cowplot())
+
+# Read functions
+source('functions/uic_direct.R')
 
 # 4-species logistic model (Ye et al. 2015)
 make_data = function (tl = 200, Z = 0, init_y = rep(0.4, 4))
@@ -31,48 +33,31 @@ make_data = function (tl = 200, Z = 0, init_y = rep(0.4, 4))
 }
 
 #------------------------------------------------------------------------------#
-#
-# Simulations
-set.seed(870204)
-block <- make_data(tl=200, init_y=runif(4, 0.1, 0.5))
+# Numerical simulations
+set.seed(1234)
+block <- make_data(tl=400, init_y=runif(4, 0.1, 0.5))
 Y <- colnames(block)[-1]
+out <- lapply(Y, function (y)
+    uic_direct(block, lib_var=y, tar_var=Y, E=1:5, tp=-(0:8), alpha=0.05)
+)
 
 gp <- rep(list(NULL), 9)
-for (i in 1:3) for (j in 1:3) {
-    if (i==1 && j==2) {
-        block$cond <- c(NA,block[-200,"y2"])
-        out <- rUIC::uic.optimal(
-            block, lib_var="y3", tar_var="y1", cond_var="cond",
-            alpha=0.01, E=1:10, tp=-(0:8))
-    }
-    else if (i==1 && j==3) {
-        block$cond <- c(NA,block[-200,"y3"])
-        out <- rUIC::uic.optimal(
-            block, lib_var="y4", tar_var="y1", cond_var="cond",
-            E=1:10, tp=-(0:8))
-    }
-    else if (i==2 && j==3) {
-        block$cond <- c(NA,block[-200,"y3"])
-        out <- rUIC::uic.optimal(
-            block, lib_var="y4", tar_var="y2", cond_var="cond",
-            E=1:10, tp=-(0:8))
-    }
-    else {
-        out <- rUIC::uic.optimal(
-            block, lib_var=Y[i+1], tar_var=Y[j],
-            E=1:10, tp=-(0:8))
-    }
-    gp[[3*(j-1) + i]] <- ggplot(out, aes(x=-tp, y=te)) +
+for (i in 2:4) for (j in 1:3) {
+    if (i<=j) df <- cbind(out[[i-1]][out[[i-1]]$target==Y[j+1],], color="black")
+    else      df <- cbind(out[[i  ]][out[[i  ]]$target==Y[j  ],], color="black")
+    df$color[df$pval<0.05 ] <- "#00BFC4"
+    df$color[df$seq_test>0] <- "#F8766D"
+    gp[[3*(j-1) + i-1]] <- ggplot(df, aes(x=-tp, y=ete)) +
         geom_line() + geom_hline(yintercept=0) +
-        geom_point(size=2, show.legend=FALSE) +
-        ylim(c(-0.1, 1.7)) + labs(x=NULL, y=NULL) +
-        theme_bw()
-}; rm(i, j, out)
-
+        geom_point(aes(color=color), size=2, show.legend=FALSE) +
+        scale_color_manual(values=sort(unique(df$color))) +
+        ylim(c(0,2)) + labs(x=NULL, y=NULL) +
+        theme_classic()
+}; rm(i, j, df)
 gp <- eval(parse(text=paste0(
-    "plot_grid(", paste0(sprintf("gp[[%s]],", 1:9), collapse=""),
+    "plot_grid(", paste0(sprintf("gp[[%s]], ",1:9), collapse=""),
     "nrow=3, ncol=3)"))); print(gp)
 
-ggsave("figs/Fig_S1.png", plot=gp, width=8, height=8)
+ggsave("figs/Fig_2.png", plot=gp, width=8, height=8)
 
 # End
