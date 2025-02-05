@@ -43,7 +43,7 @@ UIC と類似の因果推定法である **Transfer Entropy (TE, Schreiber 2000)
 
 ## インストール方法
 
-Github から直接ダウンロードしてインストールを行います。Rcpp というライブラリをインストール時に使用するため、Windows では Rtools を、Mac では gcc（Homebrew を通して？）を事前にインストールする必要があります。
+Github から直接ダウンロードしてインストールを行います。Rcpp というライブラリをインストール時に使用するため、Windows では Rtools を、Mac では gcc を事前にインストールする必要があります。
 
 ``` r
 library(remotes)
@@ -54,13 +54,13 @@ remotes::install_github("yutakaos/rUIC")
 
 #### 1. ライブラリの読み込み／データの生成
 
-解析を始める前に、**データのスケーリングを行うことを推奨**します。これは、データがゼロからかけ離れた値をもっていると、プログラム内で桁落ちを起こし正しい結果が得られないためです。データのスケーリングとは「データ全体に特定の値を引いたり割ったりする」ことで、因果の推定には影響しません。
+解析を始める前に、**データのスケーリングを行うことを推奨**します。これは、プログラム内での桁落ちを防いだり、多変量シンプレックス写像の変数間の重みづけ差を減らしたりするためです。データのスケーリングとは「データ全体に特定の値を引いたり割ったりする」ことを指します。
 
 今回の例で使用するデータは元々ゼロ近くにあるため、スケーリングをしません。
 
 ```r
 # Load library
-library(rUIC); packageVersion("rUIC") # v0.9.0
+library(rUIC); packageVersion("rUIC") # v0.9.14
 
 # simulate logistic map
 tl <- 400  # time length
@@ -142,16 +142,12 @@ uic_yx <- uic(block, lib_var="y", tar_var="x", E=Eyx, tau=1, tp=-4:4)
 
 #### 5. 因果推定を行うためのラッパー関数
 
-因果推定の実装が簡単になるよう、自動的に埋め込み次元を検討するラッパー関数を用意しています。`uic.optimal`では、手順 2 と 4 を踏み、最適な埋め込み次元をひとつだけ使用して因果を推定します（Figure 4 と同じ結果が得られる）。
+因果推定の実装が簡単になるよう、自動的に埋め込み次元を検討するラッパー関数を用意しています。`uic.optimal`では、手順 2 と 4 を踏み、最適な埋め込み次元をひとつだけ使用して因果を推定します（Figure 4 と同じ結果が得られる）。`sequential_test　=　TRUE`を指定すると、条件付き検定によって最適な `tp` についても探索します。
 
 ```r
 # compute UIC using optimal embedding dimension
-uic_opt_xy <- uic.optimal(block, lib_var="x", tar_var="y", E=0:8, tau=1, tp=-4:4)
-uic_opt_yx <- uic.optimal(block, lib_var="y", tar_var="x", E=0:8, tau=1, tp=-4:4)
-
-# compute UIC marginalizing embedding dimension
-uic_mar_xy <- uic.marginal(block, lib_var="x", tar_var="y", E=0:8, tau=1, tp=-4:4)
-uic_mar_yx <- uic.marginal(block, lib_var="y", tar_var="x", E=0:8, tau=1, tp=-4:4)
+uic_opt_xy <- uic.optimal(block, lib_var="x", tar_var="y", E=0:8, tau=1, tp=-4:4, sequential_test=TRUE)
+uic_opt_yx <- uic.optimal(block, lib_var="y", tar_var="x", E=0:8, tau=1, tp=-4:4, sequential_test=TRUE)
 ```
 
 ※ ラッパー関数を使わずにマニュアルで手順 2 と 4 を踏みことは、おかしな挙動をするデータの発見や解析のミス（探索する埋め込み次元が少なすぎる等）を防ぐのに役立つことがあります。初めてのデータを使用する際にはマニュアルで解析してみることをお勧めします。
@@ -214,6 +210,9 @@ rUIC パッケージは、基本的に rEDM パッケージを踏襲したイン
 
 **uic.optimal｜**最適な埋め込み次元の決定に使用されるシンプレックス写像の `alpha` の値。simplex とは異なり、`alpha = NULL` は指定できない。
 
+#### `sequential_test`
+**uic.optimal｜**条件付き検定によって最適な `tp` を探索するかどうか指定する「論理型」引数。
+
 #### `num_surr`
 **共通｜** _p_ 値の計算に使用されるサロゲートデータの生成数。`num_surr = 0` のとき、サロゲートデータは生成されず _p_ 値は計算されない。
 
@@ -232,17 +231,18 @@ rUIC パッケージは、基本的に rEDM パッケージを踏襲したイン
 ## 関数から出力される統計量
 
 |  統計量 | |
-| ---------| ---- |
-| `E`      | 埋め込み次元 |
-| `E0`     | 帰無モデルの埋め込み次元 |
-| `tau`    | 埋め込みラグ |
-| `tp`     | 予測先の時点数 |
-| `nn`     | 近傍数 |
-| `nn0`    | 帰無モデルの近傍数 |
-| `n_lib`  | アトラクターの再構築に使用されるデータ数 |
-| `n_pred` | 予測に使用されるデータ数 |
-| `rmse`   | モデルの予測力の指標（RMSE） |
-| `te`     | 比較されるモデル間の情報量の差（TE） |
-| `ete`    | 比較されるモデル間の有効な情報量の差（サロゲートデータにより補正） |
-| `pval`   | 帰無仮説 TE > 0 を検定した _p_ 値 |
-| `n_surr` | _p_ 値の計算に使用されたサロゲートデータの数 |
+| ----------| ---- |
+| `E`       | 埋め込み次元 |
+| `E0`      | 帰無モデルの埋め込み次元 |
+| `tau`     | 埋め込みラグ |
+| `tp`      | 予測先の時点数 |
+| `nn`      | 近傍数 |
+| `nn0`     | 帰無モデルの近傍数 |
+| `n_lib`   | アトラクターの再構築に使用されるデータ数 |
+| `n_pred`  | 予測に使用されるデータ数 |
+| `rmse`    | モデルの予測力の指標（RMSE） |
+| `te`      | 比較されるモデル間の情報量の差（TE） |
+| `ete`     | 比較されるモデル間の有効な情報量の差（サロゲートデータにより補正） |
+| `pval`    | 帰無仮説 TE > 0 を検定した _p_ 値 |
+| `n_surr`  | _p_ 値の計算に使用されたサロゲートデータの数 |
+| `seq_test'| 条件付き検定の結果の出力 |
