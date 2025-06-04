@@ -31,7 +31,7 @@ uic_direct = function (
         idx <- which(out$seq_test>0 & seq_test==0)
         if (length(idx) == 0) break
         z <- which.max(seq_test)
-        lag <- cbind(lag, make_block(block[out$target[z]], lib, -out$tp[z], group))
+        lag <- cbind(lag, rUIC::make_block(block, out$target[z], -out$tp[z], group))
         out.cond <- lapply(idx, function(j)
             out.cond <- uic.optimal(
                 cbind(block,lag), lib, pred, group,
@@ -52,6 +52,7 @@ uic_direct = function (
 # compute stability
 fun_smap = function (out)
 {
+    #out <- out_1[out_1$pval<0.05 ,]
     theta <- c(
         0, 1e-04, 3e-04, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.5,
         0.75, 1, 1.5, 2, 3, 4, 6, 8)
@@ -65,7 +66,7 @@ fun_smap = function (out)
         if (nrow(outi)!=0) {
             B <- lapply(1:nrow(outi), function(k) {
                 x <- taxa$Taxa_ID[outi$cause[k]]
-                rUIC::make_block(df[x], lag=-outi$tp[k]-1, group=df$plot)
+                rUIC::make_block(df, x, -outi$tp[k]-1, "plot")
             })
             B <- data.frame(do.call(cbind, B))
             cond_var <- colnames(B)
@@ -80,7 +81,7 @@ fun_smap = function (out)
         # smap
         lib <- lapply(unique(df$plot), function(x) range(which(df$plot==x)))
         lib <- do.call(rbind, lib)
-        L <- lapply(0:optE-1, function(k) rUIC::make_block(df[lib_var], lag=k, group=df$plot))
+        L <- lapply(0:optE-1, function(k) rUIC::make_block(df, lib_var, k, "plot"))
         L <- data.frame(do.call(cbind, L))
         DF <- cbind(L,B)
         smap <- lapply(theta, function(x)
