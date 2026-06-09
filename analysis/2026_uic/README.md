@@ -2,7 +2,7 @@
 
 ## Paper
 
-Y. Osada, M. Ushio, M. Kondoh, "A unified framework for nonparametric causality detection."
+Y. Osada, M. Ushio, M. Kondoh, "Unified information-theoretic causality test: bridging transfer entropy and convergent cross mapping."
 
 ## Directory Download
 

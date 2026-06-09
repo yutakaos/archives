@@ -32,10 +32,10 @@ make_data_2sp_var = function (tl = 400, Bxy = 0.5, Ex = 2, Ey = 2)
 }
 
 #----------------------------------------------------------------------------------------------------#
-# 2-species nonlinear Richer map with system noise
+# 2-species nonlinear Ricker map with system noise
 #----------------------------------------------------------------------------------------------------#
 
-make_data_2sp_richer = function (tl = 400, Bxy = 0.1, Ex = 0, Ey = 0, Z = 0.0)
+make_data_2sp_ricker = function (tl = 400, Bxy = 0.1, Ex = 0, Ey = 0, Z = 0.0)
 {
     x <- y <- rep(NA, tl)
     x[1] <- runif(1, 0.1, 0.5)
